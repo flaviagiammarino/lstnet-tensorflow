@@ -1,6 +1,6 @@
 ## DeepTCN TensorFlow
-TensorFlow (Python) implementation of multivariate time series forecasting model introduced in Lai, G., Chang, W., Yang, 
-Y., & Liu, H. (2018). Modeling Long- and Short-Term Temporal Patterns with Deep Neural Networks. In "The 41st 
+TensorFlow (Python) implementation of multivariate time series forecasting model introduced in Lai, G., Chang, W. C., 
+Yang, Y., & Liu, H. (2018). Modeling Long- and Short-Term Temporal Patterns with Deep Neural Networks. In "The 41st 
 International ACM SIGIR Conference on Research & Development in Information Retrieval" (SIGIR '18). Association for Computing
 Machinery, New York, NY, USA, 95–104. [https://doi.org/10.1145/3209978.3210006](https://doi.org/10.1145/3209978.3210006).
 
