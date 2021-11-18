@@ -12,6 +12,8 @@ class SkipGRU(Layer):
                  **kwargs):
 
         '''
+        Recurrent-skip layer, see Section 3.4 in the LSTNet paper.
+        
         Parameters:
         __________________________________
         units: int
@@ -58,16 +60,20 @@ class SkipGRU(Layer):
         Parameters:
         __________________________________
         inputs: tf.Tensor
-            Layer inputs, 2-dimensional tensor with shape (samples, features).
+            Layer inputs, 2-dimensional tensor with shape (n_samples, filters) where n_samples is the batch size
+            and filters is the number of channels of the convolutional layer.
 
         Returns:
         __________________________________
         outputs: tf.Tensor
-            Layer outputs, 2-dimensional tensor with shape (samples, units) if return_sequences == False,
-            3-dimensional tensor with shape (samples, timesteps, units) if return_sequences == True.
+            Layer outputs, 2-dimensional tensor with shape (n_samples, units) if return_sequences == False,
+            3-dimensional tensor with shape (n_samples, n_lookback, units) if return_sequences == True where
+            n_samples is the batch size, n_lookback is the number of past time steps used as input and units
+            is the number of hidden units of the GRU cell.
 
         states: tf.Tensor
-            Hidden states, 2-dimensional tensor with shape (samples, units).
+            Hidden states, 2-dimensional tensor with shape (n_samples, units) where n_samples is the batch size
+            and units is the number of hidden units of the GRU cell.
         '''
 
         outputs = tf.TensorArray(

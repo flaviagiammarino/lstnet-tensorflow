@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
-from tensorflow.keras.layers import Input, Conv2D, GRU, Dense, Dropout, Lambda, Reshape, Flatten, Concatenate, Add
+from tensorflow.keras.layers import Input, Conv1D, GRU, Dense, Dropout, Lambda, Reshape, Flatten, Concatenate, Add
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.regularizers import L1, L2, L1L2
 from tensorflow.keras.models import Model
 pd.options.mode.chained_assignment = None
 
@@ -15,13 +16,15 @@ class LSTNet():
                  y,
                  forecast_period,
                  lookback_period,
-                 filters=32,
-                 kernel_size=2,
+                 filters=100,
+                 kernel_size=3,
                  gru_units=100,
-                 skip_gru_units=100,
+                 skip_gru_units=50,
                  skip=1,
                  lags=1,
-                 dropout=0):
+                 dropout=0,
+                 regularizer='L2',
+                 regularization_factor=0.01):
 
         '''
         Implementation of multivariate time series forecasting model introduced in Guokun Lai, Wei-Cheng Chang, Yiming
@@ -58,6 +61,15 @@ class LSTNet():
 
         lags: int.
             Number of autoregressive lags.
+
+        dropout: float.
+            Dropout rate.
+
+        regularizer: str.
+            Regularizer, either 'L1', 'L2' or 'L1L2'.
+
+        regularization_factor: float.
+            Regularization factor.
         '''
 
         if type(y) != np.ndarray:
@@ -75,11 +87,8 @@ class LSTNet():
         if forecast_period < 1:
             raise ValueError('The length of the forecast period should be greater than one.')
 
-        if lookback_period < forecast_period:
-            raise ValueError('The lookback period cannot be shorter than the forecast period.')
-
-        if forecast_period + lookback_period >= y.shape[0]:
-            raise ValueError('The combined length of the forecast and lookback periods cannot exceed the length of the time series.')
+        if lookback_period < 1:
+            raise ValueError('The length of the lookback period should be greater than one.')
 
         if skip > lookback_period:
             raise ValueError('The number of skipped hidden cells cannot be greater than the number of input timesteps.')
@@ -93,7 +102,7 @@ class LSTNet():
         self.y_min = y_min
         self.y_max = y_max
 
-        # Extract the input and output sequences.
+        # Extract the input sequences and output values.
         self.X, self.Y = get_training_sequences(y, lookback_period)
 
         # Save the inputs.
@@ -113,7 +122,9 @@ class LSTNet():
             skip_gru_units,
             skip,
             lags,
-            dropout)
+            dropout,
+            regularizer,
+            regularization_factor)
 
     def fit(self,
             loss='mse',
@@ -224,8 +235,7 @@ class LSTNet():
         # Generate the multi-step forecasts.
         x_pred = self.X[-1:, :, :]   # Last observed input sequence.
         y_pred = self.Y[-1:, :]      # Last observed target value.
-
-        y_future = []
+        y_future = []                # Future target values.
 
         for i in range(self.n_forecast):
 
@@ -297,32 +307,101 @@ def build_fn(n_targets,
              skip_gru_units,
              skip,
              lags,
-             dropout):
+             dropout,
+             regularizer,
+             regularization_factor):
+
+    '''
+    Build the model graph, see Section 3 in the LSTNet paper.
+
+    Parameters:
+    __________________________________
+    n_targets: int.
+        Number of time series.
+
+    n_lookback: int
+        Number of past time steps to use as input.
+
+    filters: int.
+        Number of filters (or channels) of the convolutional layer.
+
+    kernel_size: int.
+        Kernel size of the convolutional layer.
+
+    gru_units: list.
+        Hidden units of GRU layer.
+
+    skip_gru_units: list.
+        Hidden units of Skip GRU layer.
+
+    skip: int.
+        Number of skipped hidden cells in the Skip GRU layer.
+
+    lags: int.
+        Number of autoregressive lags.
+
+    dropout: float.
+        Dropout rate.
+
+    regularizer: str.
+        Regularizer, either 'L1', 'L2' or 'L1L2'.
+
+    regularization_factor: float.
+        Regularization factor.
+    '''
 
     # Inputs.
     x = Input(shape=(n_lookback, n_targets))
 
-    # Convolutional component.
-    c = Reshape(target_shape=(n_lookback, n_targets, 1))(x)
-    c = Conv2D(filters=filters, kernel_size=(kernel_size, n_targets))(c)
+    # Convolutional component, see Section 3.2 of the LSTNet paper.
+    c = Conv1D(filters=filters, kernel_size=kernel_size, activation='relu')(x)
     c = Dropout(rate=dropout)(c)
-    c = Lambda(function=lambda x: x[:, :, 0, :])(c)
 
-    # Recurrent component.
+    # Recurrent component, see Section 3.3 of the LSTNet paper.
     r = GRU(units=gru_units, activation='relu')(c)
     r = Dropout(rate=dropout)(r)
+
+    # Recurrent skip-component, see Section 3.4 of the LSTNet paper.
     s = SkipGRU(units=skip_gru_units, activation='relu', return_sequences=True)(c)
+    s = Dropout(rate=dropout)(s)
     s = Lambda(function=lambda x: x[:, - skip:, :])(s)
     s = Reshape(target_shape=(s.shape[1] * s.shape[2],))(s)
     d = Concatenate(axis=1)([r, s])
-    d = Dense(units=n_targets)(d)
+    d = Dense(units=n_targets, kernel_regularizer=kernel_regularizer(regularizer, regularization_factor))(d)
 
-    # Autoregressive component.
+    # Autoregressive component, see Section 3.6 of the LSTNet paper.
     l = Lambda(function=lambda x: x[:, - lags:, :])(x)
     l = Flatten()(l)
-    l = Dense(units=n_targets)(l)
+    l = Dense(units=n_targets, kernel_regularizer=kernel_regularizer(regularizer, regularization_factor))(l)
 
     # Outputs.
     y = Add()([d, l])
 
     return Model(x, y)
+
+
+def kernel_regularizer(regularizer, regularization_factor):
+
+    '''
+    Define the kernel regularizer.
+
+    Parameters:
+    __________________________________
+    regularizer: str.
+        Regularizer, either 'L1', 'L2' or 'L1L2'.
+
+    regularization_factor: float.
+        Regularization factor.
+    '''
+
+    if regularizer == 'L1':
+        return L1(l1=regularization_factor)
+
+    elif regularizer == 'L2':
+        return L2(l2=regularization_factor)
+
+    elif regularizer == 'L1L2':
+        return L1L2(l1=regularization_factor, l2=regularization_factor)
+
+    else:
+        raise ValueError('Undefined regularizer {}.'.format(regularizer))
