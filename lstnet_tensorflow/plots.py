@@ -72,7 +72,7 @@ def plot(df, n_targets):
             go.Scatter(
                 x=df['time_idx'],
                 y=df['predicted_' + str(i + 1)],
-                name='Predicted',
+                name='Forecast',
                 showlegend=True if i == 0 else False,
                 mode='lines',
                 line=dict(
