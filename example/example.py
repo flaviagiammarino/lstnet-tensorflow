@@ -26,7 +26,7 @@ model.fit(
     loss='mse',
     learning_rate=0.01,
     batch_size=64,
-    epochs=50,
+    epochs=100,
     verbose=1
 )
 
