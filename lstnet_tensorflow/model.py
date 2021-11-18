@@ -73,13 +73,10 @@ class LSTNet():
         '''
 
         if type(y) != np.ndarray:
-            raise ValueError('The target time series must be provided as a numpy array.')
+            raise ValueError('The time series must be provided as a numpy array.')
 
         elif np.isnan(y).sum() != 0:
-            raise ValueError('The target time series cannot contain missing values.')
-
-        if len(y.shape) > 2:
-            raise ValueError('The targets array cannot have more than 2 dimensions. Found {} dimensions.'.format(len(y.shape)))
+            raise ValueError('The time series cannot contain missing values.')
 
         elif len(y.shape) == 1:
             y = np.expand_dims(y, axis=1)
@@ -353,15 +350,15 @@ def build_fn(n_targets,
     # Inputs.
     x = Input(shape=(n_lookback, n_targets))
 
-    # Convolutional component, see Section 3.2 of the LSTNet paper.
+    # Convolutional component, see Section 3.2 in the LSTNet paper.
     c = Conv1D(filters=filters, kernel_size=kernel_size, activation='relu')(x)
     c = Dropout(rate=dropout)(c)
 
-    # Recurrent component, see Section 3.3 of the LSTNet paper.
+    # Recurrent component, see Section 3.3 in the LSTNet paper.
     r = GRU(units=gru_units, activation='relu')(c)
     r = Dropout(rate=dropout)(r)
 
-    # Recurrent skip-component, see Section 3.4 of the LSTNet paper.
+    # Recurrent skip-component, see Section 3.4 in the LSTNet paper.
     s = SkipGRU(units=skip_gru_units, activation='relu', return_sequences=True)(c)
     s = Dropout(rate=dropout)(s)
     s = Lambda(function=lambda x: x[:, - skip:, :])(s)
@@ -369,7 +366,7 @@ def build_fn(n_targets,
     d = Concatenate(axis=1)([r, s])
     d = Dense(units=n_targets, kernel_regularizer=kernel_regularizer(regularizer, regularization_factor))(d)
 
-    # Autoregressive component, see Section 3.6 of the LSTNet paper.
+    # Autoregressive component, see Section 3.6 in the LSTNet paper.
     l = Lambda(function=lambda x: x[:, - lags:, :])(x)
     l = Flatten()(l)
     l = Dense(units=n_targets, kernel_regularizer=kernel_regularizer(regularizer, regularization_factor))(l)
