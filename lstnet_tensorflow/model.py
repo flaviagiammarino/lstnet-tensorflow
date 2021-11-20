@@ -358,7 +358,7 @@ def build_fn(n_targets,
     r = GRU(units=gru_units, activation='relu')(c)
     r = Dropout(rate=dropout)(r)
 
-    # Recurrent skip-component, see Section 3.4 in the LSTNet paper.
+    # Recurrent-skip component, see Section 3.4 in the LSTNet paper.
     s = SkipGRU(units=skip_gru_units, activation='relu', return_sequences=True)(c)
     s = Dropout(rate=dropout)(s)
     s = Lambda(function=lambda x: x[:, - skip:, :])(s)
