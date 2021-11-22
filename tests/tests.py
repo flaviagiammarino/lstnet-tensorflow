@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Input, GRU
 from tensorflow.keras.models import Model
-from lstnet_tensorflow.components import SkipGRU
+from lstnet_tensorflow.layers import SkipGRU
 
 # Parameters.
 p = 1

@@ -6,7 +6,7 @@ from tensorflow.keras.regularizers import L1, L2, L1L2
 from tensorflow.keras.models import Model
 pd.options.mode.chained_assignment = None
 
-from lstnet_tensorflow.components import SkipGRU
+from lstnet_tensorflow.layers import SkipGRU
 from lstnet_tensorflow.utils import get_training_sequences
 from lstnet_tensorflow.plots import plot
 
