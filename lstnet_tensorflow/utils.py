@@ -18,10 +18,10 @@ def get_training_sequences(y, n_lookback):
     Returns:
     __________________________________
     X: np.array.
-        Input sequences, array of with shape (n_samples - n_lookback, n_lookback, n_targets).
+        Input sequences, array with shape (n_samples - n_lookback, n_lookback, n_targets).
 
     Y: np.array.
-        Output values, array of with shape (n_samples - n_lookback, n_targets).
+        Output values, array with shape (n_samples - n_lookback, n_targets).
     '''
 
     X = np.zeros((y.shape[0], n_lookback, y.shape[1]))
