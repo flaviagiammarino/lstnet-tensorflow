@@ -57,6 +57,7 @@ def plot(df, n_targets):
                 x=df['time_idx'],
                 y=df['actual_' + str(i + 1)],
                 name='Actual',
+                legendgroup='Actual',
                 showlegend=True if i == 0 else False,
                 mode='lines',
                 line=dict(
@@ -73,6 +74,7 @@ def plot(df, n_targets):
                 x=df['time_idx'],
                 y=df['predicted_' + str(i + 1)],
                 name='Forecast',
+                legendgroup='Forecast',
                 showlegend=True if i == 0 else False,
                 mode='lines',
                 line=dict(
