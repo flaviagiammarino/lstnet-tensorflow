@@ -16,19 +16,19 @@ class SkipGRU(Layer):
         
         Parameters:
         __________________________________
-        units: int
+        units: int.
             Number of hidden units of the GRU cell.
 
-        p: int
+        p: int.
             Number of skipped hidden cells.
 
-        activation: str, tf.function.
+        activation: str, function.
             Activation function, see https://www.tensorflow.org/api_docs/python/tf/keras/activations.
 
-        return_sequences: bool
-            Whether to return the last output in the output sequence, or the full sequence.
+        return_sequences: bool.
+            Whether to return the last output or the full sequence.
 
-        return_state: bool
+        return_state: bool.
             Whether to return the last state in addition to the output.
 
         **kwargs: See https://www.tensorflow.org/api_docs/python/tf/keras/layers/GRUCell.
@@ -59,19 +59,19 @@ class SkipGRU(Layer):
         '''
         Parameters:
         __________________________________
-        inputs: tf.Tensor
+        inputs: tf.Tensor.
             Layer inputs, 2-dimensional tensor with shape (n_samples, filters) where n_samples is the batch size
             and filters is the number of channels of the convolutional layer.
 
         Returns:
         __________________________________
-        outputs: tf.Tensor
+        outputs: tf.Tensor.
             Layer outputs, 2-dimensional tensor with shape (n_samples, units) if return_sequences == False,
             3-dimensional tensor with shape (n_samples, n_lookback, units) if return_sequences == True where
             n_samples is the batch size, n_lookback is the number of past time steps used as input and units
             is the number of hidden units of the GRU cell.
 
-        states: tf.Tensor
+        states: tf.Tensor.
             Hidden states, 2-dimensional tensor with shape (n_samples, units) where n_samples is the batch size
             and units is the number of hidden units of the GRU cell.
         '''

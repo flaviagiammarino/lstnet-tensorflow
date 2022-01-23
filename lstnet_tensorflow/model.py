@@ -30,18 +30,18 @@ class LSTNet():
         Implementation of multivariate time series forecasting model introduced in Lai, G., Chang, W. C., Yang, Y.,
         & Liu, H. (2018). Modeling Long- and Short-Term Temporal Patterns with Deep Neural Networks. In "The 41st
         International ACM SIGIR Conference on Research & Development in Information Retrieval" (SIGIR '18).
-        Association for Computing Machinery, New York, NY, USA, 95–104. DOI:https://doi.org/10.1145/3209978.3210006.
+        Association for Computing Machinery, New York, NY, USA, 95–104. DOI: https://doi.org/10.1145/3209978.3210006.
 
         Parameters:
         __________________________________
-        y: np.array
+        y: np.array.
             Time series, array with shape (n_samples, n_targets) where n_samples is the length of the time series
             and n_targets is the number of time series.
 
-        forecast_period: int
+        forecast_period: int.
             Number of future time steps to forecast.
 
-        lookback_period: int
+        lookback_period: int.
             Number of past time steps to use as input.
 
         filters: int.
@@ -136,7 +136,7 @@ class LSTNet():
 
         Parameters:
         __________________________________
-        loss: str, tf.function.
+        loss: str, function.
             Loss function, see https://www.tensorflow.org/api_docs/python/tf/keras/losses.
 
         learning_rate: float.
@@ -181,7 +181,7 @@ class LSTNet():
 
         Returns:
         __________________________________
-        predictions: pd.DataFrame
+        predictions: pd.DataFrame.
             Data frame including the actual and predicted values of the time series.
         '''
 
@@ -225,7 +225,7 @@ class LSTNet():
 
         Returns:
         __________________________________
-        forecasts: pd.DataFrame
+        forecasts: pd.DataFrame.
             Data frame including the actual and predicted values of the time series.
         '''
 
@@ -278,7 +278,7 @@ class LSTNet():
 
         Returns:
         __________________________________
-        go.Figure
+        go.Figure.
         '''
 
         return plot(self.predictions, self.n_targets)
@@ -290,7 +290,7 @@ class LSTNet():
 
         Returns:
         __________________________________
-        go.Figure
+        go.Figure.
         '''
 
         return plot(self.forecasts, self.n_targets)
@@ -309,14 +309,14 @@ def build_fn(n_targets,
              regularization_factor):
 
     '''
-    Build the model graph, see Section 3 in the LSTNet paper.
+    Build the model, see Section 3 in the LSTNet paper.
 
     Parameters:
     __________________________________
     n_targets: int.
         Number of time series.
 
-    n_lookback: int
+    n_lookback: int.
         Number of past time steps to use as input.
 
     filters: int.

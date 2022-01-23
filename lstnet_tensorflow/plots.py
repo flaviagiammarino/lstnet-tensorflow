@@ -8,7 +8,7 @@ def plot(df, n_targets):
 
     Parameters:
     __________________________________
-    df: pd.DataFrame
+    df: pd.DataFrame.
         Data frame with actual and predicted values of the time series.
 
     n_targets: int.
@@ -16,7 +16,7 @@ def plot(df, n_targets):
 
     Returns:
     __________________________________
-    fig: go.Figure
+    fig: go.Figure.
         Line chart of actual and predicted values of the time series,
         one subplot for each time series.
     '''

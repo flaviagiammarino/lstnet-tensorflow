@@ -8,11 +8,11 @@ def get_training_sequences(y, n_lookback):
 
     Parameters:
     __________________________________
-    y: np.array
+    y: np.array.
         Time series, array with shape (n_samples, n_targets) where n_samples is the length of the time
         series and n_targets is the number of time series.
 
-    n_lookback: int
+    n_lookback: int.
         The number of past time steps used as input.
 
     Returns:
@@ -36,4 +36,3 @@ def get_training_sequences(y, n_lookback):
     Y = Y[n_lookback:, :]
 
     return X, Y
-
