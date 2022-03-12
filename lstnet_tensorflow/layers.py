@@ -106,7 +106,7 @@ class SkipGRU(Layer):
             else:
                 output, state = self.cell(
                     inputs=inputs[:, t, :],
-                    states=states.stack()[t - self.p]
+                    states=states.read(t - self.p)
                 )
 
             outputs = outputs.write(index=t, value=output)
