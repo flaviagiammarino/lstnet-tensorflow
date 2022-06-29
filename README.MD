@@ -1,4 +1,4 @@
-## LSTNet TensorFlow
+# LSTNet TensorFlow
 
 ![license](https://img.shields.io/github/license/flaviagiammarino/lstnet-tensorflow)
 ![languages](https://img.shields.io/github/languages/top/flaviagiammarino/lstnet-tensorflow)
@@ -8,7 +8,7 @@ Yang, Y., & Liu, H. (2018). Modeling Long- and Short-Term Temporal Patterns with
 International ACM SIGIR Conference on Research & Development in Information Retrieval" (SIGIR '18). Association for Computing
 Machinery, New York, NY, USA, 95–104. [https://doi.org/10.1145/3209978.3210006](https://doi.org/10.1145/3209978.3210006).
 
-### Dependencies
+## Dependencies
 ```bash
 pandas==1.3.4
 numpy==1.19.5
@@ -16,7 +16,7 @@ tensorflow==2.7.0
 plotly==5.3.1
 kaleido==0.2.1
 ```
-### Usage
+## Usage
 ```python
 import numpy as np
 from lstnet_tensorflow.model import LSTNet
