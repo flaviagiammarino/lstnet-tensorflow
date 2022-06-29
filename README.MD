@@ -1,4 +1,8 @@
 ## LSTNet TensorFlow
+
+![license](https://img.shields.io/github/license/flaviagiammarino/lstnet-tensorflow)
+![languages](https://img.shields.io/github/languages/top/flaviagiammarino/lstnet-tensorflow)
+
 TensorFlow implementation of multivariate time series forecasting model introduced in Lai, G., Chang, W. C., 
 Yang, Y., & Liu, H. (2018). Modeling Long- and Short-Term Temporal Patterns with Deep Neural Networks. In "The 41st 
 International ACM SIGIR Conference on Research & Development in Information Retrieval" (SIGIR '18). Association for Computing
