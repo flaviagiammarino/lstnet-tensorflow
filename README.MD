@@ -22,18 +22,18 @@ import numpy as np
 from lstnet_tensorflow.model import LSTNet
 
 # Generate two time series
-N = 500
+N = 1000
 t = np.linspace(0, 1, N)
-e = np.random.multivariate_normal(mean=[0, 0], cov=[[1, 0.25], [0.25, 1]], size=N)
+e = np.random.multivariate_normal(mean=np.zeros(2), cov=np.eye(2), size=N)
 a = 40 + 30 * t + 20 * np.cos(2 * np.pi * (10 * t - 0.5)) + e[:, 0]
-b = 80 - 20 * t + 10 * np.sin(2 * np.pi * (20 * t - 0.5)) + e[:, 1]
+b = 50 + 40 * t + 30 * np.cos(2 * np.pi * (20 * t - 0.5)) + e[:, 1]
 y = np.hstack([a.reshape(- 1, 1), b.reshape(- 1, 1)])
 
 # Fit the model
 model = LSTNet(
     y=y,
     forecast_period=100,
-    lookback_period=300,
+    lookback_period=200,
     kernel_size=3,
     filters=4,
     gru_units=4,
@@ -52,7 +52,7 @@ model.fit(
 ```
 ```python
 # Plot the in-sample predictions
-predictions = model.predict(index=400)
+predictions = model.predict(index=900)
 fig = model.plot_predictions()
 fig.write_image('predictions.png', width=750, height=650)
 ```
