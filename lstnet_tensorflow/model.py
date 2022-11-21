@@ -72,27 +72,6 @@ class LSTNet():
             Regularization factor.
         '''
 
-        if type(y) != np.ndarray:
-            raise ValueError('The time series must be provided as a numpy array.')
-
-        elif np.isnan(y).sum() != 0:
-            raise ValueError('The time series cannot contain missing values.')
-
-        elif len(y.shape) == 1:
-            y = np.expand_dims(y, axis=1)
-
-        if forecast_period < 1:
-            raise ValueError('The length of the forecast period should be greater than one.')
-
-        if lookback_period < 1:
-            raise ValueError('The length of the lookback period should be greater than one.')
-
-        if skip > lookback_period:
-            raise ValueError('The number of skipped hidden cells cannot be greater than the number of input timesteps.')
-
-        if lags > lookback_period:
-            raise ValueError('The number of autoregressive lags cannot be greater than the number of input timesteps.')
-
         # Normalize the targets.
         y_min, y_max = np.min(y, axis=0), np.max(y, axis=0)
         y = (y - y_min) / (y_max - y_min)
@@ -184,12 +163,6 @@ class LSTNet():
         predictions: pd.DataFrame.
             Data frame including the actual and predicted values of the time series.
         '''
-
-        if index < self.n_lookback:
-            raise ValueError('The index must be greater than {}.'.format(self.n_lookback))
-
-        elif index > len(self.y) - self.n_forecast:
-            raise ValueError('The index must be less than {}.'.format(self.n_samples - self.n_forecast))
 
         y_pred = self.model.predict(self.X)
         y_pred = y_pred[index - self.n_lookback: index - self.n_lookback + self.n_forecast, :]
