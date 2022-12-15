@@ -1,14 +1,10 @@
 import pandas as pd
 import numpy as np
-from tensorflow.keras.layers import Input, Conv1D, GRU, Dense, Dropout, Lambda, Reshape, Flatten, Concatenate, Add
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.regularizers import L1, L2, L1L2
-from tensorflow.keras.models import Model
+import tensorflow as tf
 pd.options.mode.chained_assignment = None
 
 from lstnet_tensorflow.layers import SkipGRU
 from lstnet_tensorflow.utils import get_training_sequences
-from lstnet_tensorflow.plots import plot
 
 class LSTNet():
 
@@ -135,7 +131,7 @@ class LSTNet():
         '''
 
         self.model.compile(
-            optimizer=Adam(learning_rate=learning_rate),
+            optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
             loss=loss,
         )
 
@@ -148,72 +144,37 @@ class LSTNet():
             verbose=verbose
         )
 
-    def predict(self, index):
-
+    def forecast(self, y):
+    
         '''
-        Extract the in-sample predictions.
-
+        Generate the forecasts.
+        
         Parameters:
         __________________________________
-        index: int.
-            The start index of the sequence to predict.
-
-        Returns:
-        __________________________________
-        predictions: pd.DataFrame.
-            Data frame including the actual and predicted values of the time series.
-        '''
-
-        y_pred = self.model.predict(self.X)
-        y_pred = y_pred[index - self.n_lookback: index - self.n_lookback + self.n_forecast, :]
-
-        # Organize the predictions in a data frame.
-        columns = ['time_idx']
-        columns.extend(['actual_' + str(i + 1) for i in range(self.n_targets)])
-        columns.extend(['predicted_' + str(i + 1) for i in range(self.n_targets)])
-
-        predictions = pd.DataFrame(columns=columns)
-        predictions['time_idx'] = np.arange(self.n_samples)
-
-        for i in range(self.n_targets):
-
-            predictions['actual_' + str(i + 1)] = \
-                self.y_min[i] + (self.y_max[i] - self.y_min[i]) * self.y[:, i]
-
-            predictions['predicted_' + str(i + 1)].iloc[index: index + self.n_forecast] = \
-                self.y_min[i] + (self.y_max[i] - self.y_min[i]) * y_pred[:, i]
-
-        predictions = predictions.astype(float)
-
-        # Save the data frame.
-        self.predictions = predictions
-
-        # Return the data frame.
-        return predictions
-
-    def forecast(self):
-
-        '''
-        Generate the out-of-sample forecasts.
+        y: np.array.
+            Past values of the time series.
 
         Returns:
         __________________________________
         forecasts: pd.DataFrame.
-            Data frame including the actual and predicted values of the time series.
+            Data frame including the actual values of the time series and the forecasts.
         '''
 
+        # Normalize the targets.
+        y = (y - self.y_min) / (self.y_max - self.y_min)
+        
         # Generate the multi-step forecasts.
-        x_pred = self.X[-1:, :, :]   # Last observed input sequence.
-        y_pred = self.Y[-1:, :]      # Last observed target value.
-        y_future = []                # Future target values.
-
+        x_pred = y[- self.n_lookback - 1: - 1, :].reshape(1, self.n_lookback, self.n_targets)   # Last observed input sequence.
+        y_pred = y[-1:, :].reshape(1, 1, self.n_targets)                                        # Last observed target value.
+        y_future = []                                                                           # Future target values.
+        
         for i in range(self.n_forecast):
 
             # Feed the last forecast back to the model as an input.
-            x_pred = np.append(x_pred[:, 1:, :], y_pred.reshape(1, 1, self.n_targets), axis=1)
+            x_pred = np.append(x_pred[:, 1:, :], y_pred, axis=1)
 
             # Generate the next forecast.
-            y_pred = self.model.predict(x_pred)
+            y_pred = self.model(x_pred).numpy().reshape(1, 1, self.n_targets)
 
             # Save the forecast.
             y_future.append(y_pred.flatten().tolist())
@@ -225,48 +186,19 @@ class LSTNet():
         columns.extend(['actual_' + str(i + 1) for i in range(self.n_targets)])
         columns.extend(['predicted_' + str(i + 1) for i in range(self.n_targets)])
 
-        forecasts = pd.DataFrame(columns=columns)
-        forecasts['time_idx'] = np.arange(self.n_samples + self.n_forecast)
+        df = pd.DataFrame(columns=columns)
+        df['time_idx'] = np.arange(self.n_samples + self.n_forecast)
 
         for i in range(self.n_targets):
 
-            forecasts['actual_' + str(i + 1)].iloc[: - self.n_forecast] = \
+            df['actual_' + str(i + 1)].iloc[: - self.n_forecast] = \
                 self.y_min[i] + (self.y_max[i] - self.y_min[i]) * self.y[:, i]
 
-            forecasts['predicted_' + str(i + 1)].iloc[- self.n_forecast:] = \
+            df['predicted_' + str(i + 1)].iloc[- self.n_forecast:] = \
                 self.y_min[i] + (self.y_max[i] - self.y_min[i]) * y_future[:, i]
 
-        forecasts = forecasts.astype(float)
-
-        # Save the data frame.
-        self.forecasts = forecasts
-
         # Return the data frame.
-        return forecasts
-
-    def plot_predictions(self):
-
-        '''
-        Plot the in-sample predictions.
-
-        Returns:
-        __________________________________
-        go.Figure.
-        '''
-
-        return plot(self.predictions, self.n_targets)
-
-    def plot_forecasts(self):
-
-        '''
-        Plot the out-of-sample forecasts.
-
-        Returns:
-        __________________________________
-        go.Figure.
-        '''
-
-        return plot(self.forecasts, self.n_targets)
+        return df.astype(float)
 
 
 def build_fn(n_targets,
@@ -321,33 +253,32 @@ def build_fn(n_targets,
     '''
 
     # Inputs.
-    x = Input(shape=(n_lookback, n_targets))
+    x = tf.keras.layers.Input(shape=(n_lookback, n_targets))
 
     # Convolutional component, see Section 3.2 in the LSTNet paper.
-    c = Conv1D(filters=filters, kernel_size=kernel_size, activation='relu')(x)
-    c = Dropout(rate=dropout)(c)
+    c = tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, activation='relu')(x)
+    c = tf.keras.layers.Dropout(rate=dropout)(c)
 
     # Recurrent component, see Section 3.3 in the LSTNet paper.
-    r = GRU(units=gru_units, activation='relu')(c)
-    r = Dropout(rate=dropout)(r)
+    r = tf.keras.layers.GRU(units=gru_units, activation='relu')(c)
+    r = tf.keras.layers.Dropout(rate=dropout)(r)
 
     # Recurrent-skip component, see Section 3.4 in the LSTNet paper.
     s = SkipGRU(units=skip_gru_units, activation='relu', return_sequences=True)(c)
-    s = Dropout(rate=dropout)(s)
-    s = Lambda(function=lambda x: x[:, - skip:, :])(s)
-    s = Reshape(target_shape=(s.shape[1] * s.shape[2],))(s)
-    d = Concatenate(axis=1)([r, s])
-    d = Dense(units=n_targets, kernel_regularizer=kernel_regularizer(regularizer, regularization_factor))(d)
+    s = tf.keras.layers.Dropout(rate=dropout)(s)
+    s = tf.keras.layers.Lambda(function=lambda x: x[:, - skip:, :])(s)
+    s = tf.keras.layers.Reshape(target_shape=(s.shape[1] * s.shape[2],))(s)
+    d = tf.keras.layers.Concatenate(axis=1)([r, s])
+    d = tf.keras.layers.Dense(units=n_targets, kernel_regularizer=kernel_regularizer(regularizer, regularization_factor))(d)
 
     # Autoregressive component, see Section 3.6 in the LSTNet paper.
-    l = Lambda(function=lambda x: x[:, - lags:, :])(x)
-    l = Flatten()(l)
-    l = Dense(units=n_targets, kernel_regularizer=kernel_regularizer(regularizer, regularization_factor))(l)
+    l = tf.keras.layers.Flatten()(x[:, - lags:, :])
+    l = tf.keras.layers.Dense(units=n_targets, kernel_regularizer=kernel_regularizer(regularizer, regularization_factor))(l)
 
     # Outputs.
-    y = Add()([d, l])
+    y = tf.keras.layers.Add()([d, l])
 
-    return Model(x, y)
+    return tf.keras.models.Model(x, y)
 
 
 def kernel_regularizer(regularizer, regularization_factor):
@@ -365,13 +296,13 @@ def kernel_regularizer(regularizer, regularization_factor):
     '''
 
     if regularizer == 'L1':
-        return L1(l1=regularization_factor)
+        return tf.keras.regularizers.L1(l1=regularization_factor)
 
     elif regularizer == 'L2':
-        return L2(l2=regularization_factor)
+        return tf.keras.regularizers.L2(l2=regularization_factor)
 
     elif regularizer == 'L1L2':
-        return L1L2(l1=regularization_factor, l2=regularization_factor)
+        return tf.keras.regularizers.L1L2(l1=regularization_factor, l2=regularization_factor)
 
     else:
         raise ValueError('Undefined regularizer {}.'.format(regularizer))

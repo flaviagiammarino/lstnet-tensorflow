@@ -1,7 +1,6 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Layer, GRUCell
 
-class SkipGRU(Layer):
+class SkipGRU(tf.keras.layers.Layer):
 
     def __init__(self,
                  units,
@@ -42,7 +41,7 @@ class SkipGRU(Layer):
         self.return_sequences = return_sequences
         self.return_state = return_state
         self.timesteps = None
-        self.cell = GRUCell(units=units, activation=activation, **kwargs)
+        self.cell = tf.keras.layers.GRUCell(units=units, activation=activation, **kwargs)
 
         super(SkipGRU, self).__init__()
 
@@ -80,14 +79,16 @@ class SkipGRU(Layer):
             element_shape=(inputs.shape[0], self.units),
             size=self.timesteps,
             dynamic_size=False,
-            dtype=tf.float32
+            dtype=tf.float32,
+            clear_after_read=False
         )
 
         states = tf.TensorArray(
             element_shape=(inputs.shape[0], self.units),
             size=self.timesteps,
             dynamic_size=False,
-            dtype=tf.float32
+            dtype=tf.float32,
+            clear_after_read=False
         )
 
         initial_states = tf.zeros(

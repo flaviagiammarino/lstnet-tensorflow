@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-def plot(df, n_targets):
+def plot(df):
 
     '''
     Plot the actual and predicted values of the time series.
@@ -11,9 +11,6 @@ def plot(df, n_targets):
     df: pd.DataFrame.
         Data frame with actual and predicted values of the time series.
 
-    n_targets: int.
-        Number of time series.
-
     Returns:
     __________________________________
     fig: go.Figure.
@@ -21,6 +18,10 @@ def plot(df, n_targets):
         one subplot for each time series.
     '''
 
+    # get the number of targets
+    n_targets = (df.shape[1] - 1) // 2
+
+    # plot the forecasts for each target
     fig = make_subplots(
         subplot_titles=['Target ' + str(i + 1) for i in range(n_targets)],
         vertical_spacing=0.15,
@@ -31,22 +32,27 @@ def plot(df, n_targets):
     fig.update_layout(
         plot_bgcolor='white',
         paper_bgcolor='white',
-        margin=dict(t=40, b=10, l=10, r=10),
+        margin=dict(t=60, b=60, l=30, r=30),
         font=dict(
-            color='#000000',
-            size=10,
+            color='#1b1f24',
+            size=8,
         ),
         legend=dict(
             traceorder='normal',
             font=dict(
-                color='#000000',
+                color='#1b1f24',
+                size=10,
             ),
+            x=0,
+            y=-0.1,
+            orientation='h'
         ),
     )
 
     fig.update_annotations(
         font=dict(
-            size=13
+            color='#1b1f24',
+            size=12,
         )
     )
 
@@ -61,7 +67,7 @@ def plot(df, n_targets):
                 showlegend=True if i == 0 else False,
                 mode='lines',
                 line=dict(
-                    color='#b3b3b3',
+                    color='#afb8c1',
                     width=1
                 )
             ),
@@ -79,7 +85,7 @@ def plot(df, n_targets):
                 mode='lines',
                 line=dict(
                     width=1,
-                    color='#0550ae',
+                    color='#0969da',
                 ),
             ),
             row=i + 1,
@@ -88,11 +94,12 @@ def plot(df, n_targets):
 
         fig.update_xaxes(
             title='Time',
-            color='#000000',
+            color='#424a53',
             tickfont=dict(
-                color='#3a3a3a',
+                color='#6e7781',
+                size=6,
             ),
-            linecolor='#d9d9d9',
+            linecolor='#eaeef2',
             mirror=True,
             showgrid=False,
             row=i + 1,
@@ -101,11 +108,12 @@ def plot(df, n_targets):
 
         fig.update_yaxes(
             title='Value',
-            color='#000000',
+            color='#424a53',
             tickfont=dict(
-                color='#3a3a3a',
+                color='#6e7781',
+                size=6,
             ),
-            linecolor='#d9d9d9',
+            linecolor='#eaeef2',
             mirror=True,
             showgrid=False,
             zeroline=False,
