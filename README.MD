@@ -10,10 +10,6 @@ Yang, Y., and Liu, H. (2018). Modeling Long- and Short-Term Temporal Patterns wi
 International ACM SIGIR Conference on Research & Development in Information Retrieval (SIGIR '18)*. Association for Computing
 Machinery, New York, NY, USA, 95–104. 
 
-<img src=diagram.png style="width:90%;margin-top:60px;margin-bottom:30px"/>
-
-*Model architecture (source: [doi: 10.1145/3209978.3210006](https://doi.org/10.1145/3209978.3210006))*
-
 ## Dependencies
 ```bash
 pandas==1.5.2
