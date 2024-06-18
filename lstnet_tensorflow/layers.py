@@ -53,6 +53,8 @@ class SkipGRU(tf.keras.layers.Layer):
             if self.p > self.timesteps:
                 raise ValueError('The number of skipped hidden cells cannot be greater than the number of timesteps.')
 
+    
+    @tf.function
     def call(self, inputs):
 
         '''
